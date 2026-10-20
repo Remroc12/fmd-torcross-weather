@@ -15,8 +15,8 @@ async function loadBuoy(){
   const response=await fetch('/api/start-bay',{cache:'no-store'});
   const json=await response.json();
   if(!response.ok)throw Error(json.error||'Buoy request failed');
-  const items=(json.data?.features||[]).map(f=>f.properties||{}).filter(p=>p.sensor==='Start Bay' && /^\d{14}$/.test(String(p.date||''))).map(p=>{
-   const d=String(p.date);
+  const items=(json.data?.features||[]).map(f=>f.properties||{}).filter(p=>p.sensor==='Start Bay' && /^\d{8}T?\d{6}$/.test(String(p.date||''))).map(p=>{
+   const d=String(p.date).replace('T','');
    const date=new Date(Date.UTC(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8),+d.slice(8,10),+d.slice(10,12),+d.slice(12,14)));
    const number=k=>{const n=Number(p[k]);return p[k]===null||p[k]===undefined||p[k]===''||!Number.isFinite(n)?null:n};
    return {date,hs:number('hs'),hmax:number('hmax'),tp:number('tp'),direction:number('value')};
