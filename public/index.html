@@ -15,13 +15,17 @@ async function loadBuoy(){
   const response=await fetch('/api/start-bay',{cache:'no-store'});
   const json=await response.json();
   if(!response.ok)throw Error(json.error||'Buoy request failed');
-  const items=(json.data?.features||[]).map(f=>f.properties||{}).filter(p=>p.sensor==='Start Bay' && /^\d{8}T?\d{6}$/.test(String(p.date||''))).map(p=>{ 
-   const d=String(p.date).replace('T','');
+  // CCO timestamps can include a separator between YYYYMMDD and HHMMSS.
+  // Keep the exact 14 date/time digits and ignore punctuation such as #, T, or spaces.
+  const features=Array.isArray(json.data?.features)?json.data.features:[];
+  const items=features.map(f=>f.properties||{}).filter(p=>String(p.sensor||'').trim().toLowerCase()==='start bay').map(p=>{
+   const d=String(p.date||'').replace(/\D/g,'');
+   if(d.length!==14)return null;
    const date=new Date(Date.UTC(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8),+d.slice(8,10),+d.slice(10,12),+d.slice(12,14)));
    const number=k=>{const n=Number(p[k]);return p[k]===null||p[k]===undefined||p[k]===''||!Number.isFinite(n)?null:n};
    return {date,hs:number('hs'),hmax:number('hmax'),tp:number('tp'),direction:number('value')};
-  }).filter(p=>!Number.isNaN(p.date.getTime())).sort((a,b)=>a.date-b.date);
-  if(!items.length)throw Error('No dated Start Bay observations found');
+  }).filter(p=>p && !Number.isNaN(p.date.getTime())).sort((a,b)=>a.date-b.date);
+  if(!items.length)throw Error('No dated Start Bay observations found (received '+features.length+' API records)');
   const last=items[items.length-1];
   const ageHours=(Date.now()-last.date.getTime())/3600000;
   const fresh=ageHours>=-0.5 && ageHours<=3;
