@@ -52,7 +52,7 @@ async function loadBuoy(){
  try{
   const response=await fetch('/api/start-bay',{cache:'no-store'});
   const json=await response.json();
-  if(!response.ok)throw Error(json.error||'Buoy request failed');
+  if(!response.ok)throw Error(json.error||'Buoy request failed'); 
   // CCO timestamps can include a separator between YYYYMMDD and HHMMSS.
   // Keep the exact 14 date/time digits and ignore punctuation such as #, T, or spaces.
   const features=Array.isArray(json.data?.features)?json.data.features:[];
