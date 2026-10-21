@@ -25,7 +25,7 @@ function updateHmaxScreening(){
 function setDailyScreen(level,reason){
  el('daily-screen').textContent=level==='RED'?'RED — planning trigger':level==='AMBER'?'AMBER — unvalidated wave risk': 'UNKNOWN — insufficient data';
  el('daily-reason').textContent=reason;
- ['green','amber','red'].forEach(c=>el('light-'+c).classList.toggle('on',c===level.toLowerCase()));
+ ['green','amber','red'].forEach(c=>{const light=el('light-'+c);light.classList.toggle('on',c===level.toLowerCase());});
 }
 function updateDailyScreen(){
  const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
